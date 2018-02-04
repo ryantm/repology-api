@@ -28,14 +28,14 @@ data Package = Package
   { repo :: Text
   , name :: Text
   , version :: Text
-  , origversion :: Text
+  , origversion :: Maybe Text
   , status :: Text
-  , summary :: Text
-  , categories :: Vector Text
-  , licenses :: Vector Text
+  , summary :: Maybe Text
+  , categories :: Maybe (Vector Text)
+  , licenses :: Maybe (Vector Text)
   , maintainers :: Vector Text
-  , www :: Vector Text
-  , downloads :: Vector Text
+  , www :: Maybe (Vector Text)
+  , downloads :: Maybe (Vector Text)
   } deriving (Eq, Show, Generic)
 
 instance FromJSON Package
