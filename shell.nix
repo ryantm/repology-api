@@ -5,7 +5,8 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, aeson, base, errors, hpack, http-client-tls
-      , servant, servant-client, stdenv, text, vector
+      , servant, servant-client, stdenv, text, unordered-containers
+      , vector
       }:
       mkDerivation {
         pname = "repology-api";
@@ -16,7 +17,7 @@ let
         libraryToolDepends = [ hpack ];
         executableHaskellDepends = [
           aeson base errors http-client-tls servant servant-client text
-          vector
+          unordered-containers vector
         ];
         preConfigure = "hpack";
         homepage = "https://github.com/ryantm/repology-api#readme";

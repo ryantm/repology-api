@@ -20,6 +20,7 @@ dependencies:
   - vector
   - errors
   - http-client-tls
+  - unordered-containers
 
 executables:
   repology-api:
