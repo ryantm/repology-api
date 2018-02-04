@@ -1,0 +1,27 @@
+name:                repology-api
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/ryantm/repology-api#readme
+license:             BSD3
+author:              Ryan Mulligan
+maintainer:          ryan@ryantm.com
+copyright:           2018 Ryan Mulligan
+category:            Web
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - servant
+  - servant-client
+  - aeson
+  - text
+  - vector
+  - errors
+  - http-client-tls
+
+executables:
+  repology-api:
+    source-dirs:      src
+    main:             Main.hs
