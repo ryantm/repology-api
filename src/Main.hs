@@ -65,7 +65,7 @@ updateInfo (outdated, newest) =
   " (" <>
   repo outdated <>
   ")" <>
-  "-> " <>
+  " -> " <>
   version newest <>
   " (" <>
   repo newest <>
