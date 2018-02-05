@@ -7,7 +7,7 @@ module Repology where
 
 import           Control.Error
 import           Data.Aeson
-import           Data.HashMap.Strict
+import           Data.HashMap.Lazy
 import           Data.Proxy
 import           Data.Text (Text)
 import           Data.Vector
@@ -19,14 +19,10 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
 type API =
-  "api" :>
-  "v1" :>
   "metapackage" :>
   Capture "metapackage_name" Text :>
   Get '[JSON] [Package]
   :<|>
-  "api" :>
-  "v1" :>
   "metapackages" :>
   QueryParam "search" Text :>
   QueryParam "maintainer" Text :>
@@ -46,7 +42,7 @@ data Package = Package
   , status :: Maybe Text
   , summary :: Maybe Text
   , categories :: Maybe (Vector Text)
-  , licenses :: Maybe (Vector pText)
+  , licenses :: Maybe (Vector Text)
   , maintainers :: Vector Text
   , www :: Maybe (Vector Text)
   , downloads :: Maybe (Vector Text)
@@ -71,3 +67,5 @@ metapackages ::
   ClientM (HashMap Text [Package])
 
 metapackage :<|> metapackages = client api
+
+baseUrl = BaseUrl Https "repology.org" 443 "/api/v1"
