@@ -1,5 +1,7 @@
 # repology-api
 
+This will eventually just be an API binding for Repology, but I'm using this to help me make a tool for nixpkgs, so they are combined right now. It returns the first 5 packages that have newer versions in a packaging repo that Repology tracks.
+
 Example usage:
 ```
 cabal2nix --shell --hpack . > shell.nix && nix-build shell.nix && result/bin/repology-api
