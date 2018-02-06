@@ -49,7 +49,6 @@ outdatedInfos :: ClientM [OutdatedInfo]
 outdatedInfos = do
   outdated <- nixOutdated
   (elems >>>                           -- [[Package]]
-   take 5 >>>                          -- [[Package]]
    fmap (findForRepo nixRepo) >>>      -- [Maybe Package]
    catMaybes >>>                       -- [Package]
    fmap outdatedInfo >>>               -- [ClientM (Maybe OutdatedInfo)]
@@ -58,7 +57,7 @@ outdatedInfos = do
 
 updateInfo :: (Package, Package) -> Text
 updateInfo (outdated, newest) =
-  "Update needed: " <>
+  "- [ ] " <>
   name outdated <>
   " " <>
   version outdated <>
