@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -17,6 +18,9 @@ import           Servant.Client
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+
+
+baseUrl = BaseUrl Https "repology.org" 443 "/api/v1"
 
 type API =
   "metapackage" :>
@@ -46,10 +50,7 @@ data Package = Package
   , maintainers :: Vector Text
   , www :: Maybe (Vector Text)
   , downloads :: Maybe (Vector Text)
-  } deriving (Eq, Show, Generic)
-
-instance FromJSON Package
-
+  } deriving (Eq, Show, Generic, FromJSON)
 
 api :: Proxy API
 api = Proxy
@@ -67,5 +68,3 @@ metapackages ::
   ClientM (HashMap Text [Package])
 
 metapackage :<|> metapackages = client api
-
-baseUrl = BaseUrl Https "repology.org" 443 "/api/v1"
