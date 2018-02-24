@@ -2,64 +2,84 @@
 
 module Main where
 
-import           Control.Category
+import           Control.Category ((>>>))
 import           Control.Error
-import           Data.HashMap.Lazy
+import           Control.Monad
+import           Data.HashMap.Strict
 import           Data.List
+import           Data.Maybe
 import           Data.Monoid
 import           Data.Text (Text)
 import qualified Data.Text.IO
+import           Data.Vector (Vector)
+import qualified Data.Vector as V
 import           Network.HTTP.Client.TLS (newTlsManager)
 import           Repology
 import           Servant.Client
 
 nixRepo = "nix_unstable"
 
-nixOutdated :: ClientM (HashMap Text [Package])
+nixOutdated :: ClientM Metapackages
 nixOutdated = metapackages
-           Nothing
-           Nothing
-           Nothing
-           (Just nixRepo)
-           (Just True)
-           Nothing
-           Nothing
-           Nothing
+  Nothing
+  Nothing
+  Nothing
+  (Just nixRepo)
+  (Just True)
+  Nothing
+  Nothing
+  Nothing
 
-findForRepo :: Text -> [Package] -> Maybe Package
-findForRepo r = find (\ p -> (repo p) == r)
+nextNixOutdated :: Text -> ClientM Metapackages
+nextNixOutdated n = metapackages'
+  n
+  Nothing
+  Nothing
+  Nothing
+  (Just nixRepo)
+  (Just True)
+  Nothing
+  Nothing
+  Nothing
 
-newestPackage :: Text -> ClientM (Maybe Package)
-newestPackage pName = do
-  ps <- metapackage pName
-  pure (find (\p -> (status p) == Just "newest") ps)
 
+findForRepo :: Text -> Vector Package -> Maybe Package
+findForRepo r = V.find (\ p -> (repo p) == r)
 
-type OutdatedInfo = (Package, Package)
+newest :: Vector Package -> Maybe Package
+newest = V.find (\p -> (status p) == Just "newest")
 
-outdatedInfo :: Package -> ClientM (Maybe OutdatedInfo)
-outdatedInfo p = do
-  np <- newestPackage (name p)
-  case np of
-    Nothing -> return Nothing
-    Just np' ->
-      return (Just (p, np'))
+dropMaybes :: [(Maybe Package, Maybe Package)] -> [(Package, Package)]
+dropMaybes = Data.List.foldl' twoJusts []
+  where twoJusts a (Just o, Just n) = (o,n):a
+        twoJusts a _ = a
 
-outdatedInfos :: ClientM [OutdatedInfo]
-outdatedInfos = do
+getUpdateInfo :: ClientM (Maybe Text, Vector (Package, Package))
+getUpdateInfo = do
   outdated <- nixOutdated
-  (elems >>>                           -- [[Package]]
-   fmap (findForRepo nixRepo) >>>      -- [Maybe Package]
-   catMaybes >>>                       -- [Package]
-   fmap outdatedInfo >>>               -- [ClientM (Maybe OutdatedInfo)]
-   sequence >>>                        -- ClientM [Maybe OutdatedInfo]
-   fmap catMaybes) outdated
+  let ms = elems outdated
+  let nixPackages = fmap (findForRepo nixRepo) ms
+  let newestPackages = fmap newest ms
+  let nixNew = dropMaybes (zip nixPackages newestPackages)
+--  let sorted = sortBy (\(p1,_) (p2,_) -> compare (name p1) (name p2)) nixNew
+  return (lastMetapackageName outdated, V.fromList nixNew)
+
+getNextUpdateInfo :: Text -> ClientM (Maybe Text, Vector (Package, Package))
+getNextUpdateInfo n = do
+  outdated <- nextNixOutdated n
+  let ms = elems outdated
+  let nixPackages = fmap (findForRepo nixRepo) ms
+  let newestPackages = fmap newest ms
+  let nixNew = dropMaybes (zip nixPackages newestPackages)
+--  let sorted = sortBy (\(p1,_) (p2,_) -> compare (name p1) (name p2)) nixNew
+  return (lastMetapackageName outdated, V.fromList nixNew)
+
 
 updateInfo :: (Package, Package) -> Text
 updateInfo (outdated, newest) =
   "- [ ] " <>
   name outdated <>
-  " " <>
+  ": " <>
   version outdated <>
   " (" <>
   repo outdated <>
@@ -70,14 +90,37 @@ updateInfo (outdated, newest) =
   repo newest <>
   ")"
 
+moreWork :: (Maybe Text, Vector (Package, Package)) -> Bool
+moreWork (Nothing, _) = False
+moreWork (_, v) = length v /= 1
+
+
+moreNixUpdateInfo ::
+  (Maybe Text, Vector (Package, Package)) ->
+  ClientM (Vector (Package, Package))
+moreNixUpdateInfo (Nothing, acc) = do
+  result <- getUpdateInfo
+  if moreWork result
+    then moreNixUpdateInfo (fst result, (snd result) V.++ acc)
+    else return acc
+moreNixUpdateInfo (Just name, acc) = do
+  result <- getNextUpdateInfo name
+  if moreWork result
+    then moreNixUpdateInfo (fst result, (snd result) V.++ acc)
+    else return acc
+
+
+allNixUpdateInfo :: ClientM (Vector (Package, Package))
+allNixUpdateInfo = moreNixUpdateInfo (Nothing, V.empty)
+
 main :: IO ()
 main = do
   manager' <- newTlsManager
-  res <- runClientM outdatedInfos (ClientEnv manager' baseUrl)
+  res <- runClientM allNixUpdateInfo (ClientEnv manager' baseUrl)
   case res of
     Left err -> putStrLn $ "Error: " ++ show err
-    Right [] -> putStrLn "No updates needed"
-    Right ois ->
-      (fmap updateInfo >>>
-      fmap Data.Text.IO.putStrLn >>>
-      sequence_) ois
+    Right ois | V.null ois -> putStrLn "No updates needed"
+              | otherwise -> do
+                  (fmap updateInfo >>>
+                    fmap Data.Text.IO.putStrLn >>>
+                    V.sequence_) ois
