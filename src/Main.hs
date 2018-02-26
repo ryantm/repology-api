@@ -77,18 +77,11 @@ getNextUpdateInfo n = do
 
 updateInfo :: (Package, Package) -> Text
 updateInfo (outdated, newest) =
-  "- [ ] " <>
   name outdated <>
-  ": " <>
+  " " <>
   version outdated <>
-  " (" <>
-  repo outdated <>
-  ")" <>
-  " -> " <>
-  version newest <>
-  " (" <>
-  repo newest <>
-  ")"
+  " " <>
+  version newest
 
 moreWork :: (Maybe Text, Vector (Package, Package)) -> Bool
 moreWork (Nothing, _) = False
