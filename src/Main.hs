@@ -42,9 +42,11 @@ nextNixOutdated n = metapackages'
   Nothing
   Nothing
 
-
-findForRepo :: Text -> Vector Package -> Maybe Package
-findForRepo r = V.find (\ p -> (repo p) == r)
+outdatedForRepo :: Text -> Vector Package -> Maybe Package
+outdatedForRepo r =
+  V.find (\p ->
+             (status p) == Just "outdated" &&
+             (repo p) == r)
 
 newest :: Vector Package -> Maybe Package
 newest = V.find (\p -> (status p) == Just "newest")
@@ -58,7 +60,7 @@ getUpdateInfo :: ClientM (Maybe Text, Vector (Package, Package))
 getUpdateInfo = do
   outdated <- nixOutdated
   let ms = elems outdated
-  let nixPackages = fmap (findForRepo nixRepo) ms
+  let nixPackages = fmap (outdatedForRepo nixRepo) ms
   let newestPackages = fmap newest ms
   let nixNew = dropMaybes (zip nixPackages newestPackages)
 --  let sorted = sortBy (\(p1,_) (p2,_) -> compare (name p1) (name p2)) nixNew
@@ -68,7 +70,7 @@ getNextUpdateInfo :: Text -> ClientM (Maybe Text, Vector (Package, Package))
 getNextUpdateInfo n = do
   outdated <- nextNixOutdated n
   let ms = elems outdated
-  let nixPackages = fmap (findForRepo nixRepo) ms
+  let nixPackages = fmap (outdatedForRepo nixRepo) ms
   let newestPackages = fmap newest ms
   let nixNew = dropMaybes (zip nixPackages newestPackages)
 --  let sorted = sortBy (\(p1,_) (p2,_) -> compare (name p1) (name p2)) nixNew
