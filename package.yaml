@@ -3,7 +3,7 @@ version:             0.1.0.0
 #synopsis:
 #description:
 homepage:            https://github.com/ryantm/repology-api#readme
-license:             BSD3
+license:             PublicDomain
 author:              Ryan Mulligan
 maintainer:          ryan@ryantm.com
 copyright:           2018 Ryan Mulligan

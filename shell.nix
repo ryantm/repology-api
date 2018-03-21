@@ -21,7 +21,7 @@ let
         ];
         preConfigure = "hpack";
         homepage = "https://github.com/ryantm/repology-api#readme";
-        license = stdenv.lib.licenses.bsd3;
+        license = stdenv.lib.licenses.publicDomain;
       };
 
   haskellPackages = if compiler == "default"

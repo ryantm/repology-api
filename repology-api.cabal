@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 38a568cdc8a1af622be2edf17f01a43dc32314acc2be17b7f4fd4962d358088a
+-- hash: 25a9836a52f78ae714a96b3c59a3a13a699e004551ad74dfc9e5a5398d504776
 
 name:           repology-api
 version:        0.1.0.0
@@ -29,5 +29,11 @@ executable repology-api
   build-depends:
       aeson
     , base >=4.7 && <5
+    , errors
+    , http-client-tls
     , servant
+    , servant-client
+    , text
+    , unordered-containers
+    , vector
   default-language: Haskell2010
