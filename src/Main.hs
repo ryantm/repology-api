@@ -15,7 +15,7 @@ import           Data.Vector (Vector)
 import qualified Data.Vector as V
 import           Network.HTTP.Client.TLS (newTlsManager)
 import           Repology
-import           Servant.Client
+import           Servant.Client (ClientM, ClientEnv (ClientEnv), runClientM)
 
 nixRepo = "nix_unstable"
 
@@ -111,7 +111,7 @@ allNixUpdateInfo = moreNixUpdateInfo (Nothing, V.empty)
 main :: IO ()
 main = do
   manager' <- newTlsManager
-  res <- runClientM allNixUpdateInfo (ClientEnv manager' baseUrl)
+  res <- runClientM allNixUpdateInfo (ClientEnv manager' baseUrl Nothing)
   case res of
     Left err -> putStrLn $ "Error: " ++ show err
     Right ois | V.null ois -> putStrLn "No updates needed"
