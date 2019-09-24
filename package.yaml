@@ -1,13 +1,15 @@
 name:                repology-api
 version:             0.1.0.0
-#synopsis:
-#description:
+synopsis:            Repology.org API v1 bindings
+description:         This will eventually just be an API binding for Repology, but I'm using this to help me make a tool for nixpkgs, so they are combined right now. It returns all the packages that have newer versions in a packaging repo that Repology tracks.
 homepage:            https://github.com/ryantm/repology-api#readme
 license:             PublicDomain
 author:              Ryan Mulligan
 maintainer:          ryan@ryantm.com
 copyright:           2018 Ryan Mulligan
 category:            Web
+github:              ryantm/repology-api
+
 extra-source-files:
 - README.md
 

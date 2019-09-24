@@ -1,23 +1,30 @@
--- This file has been generated from package.yaml by hpack version 0.21.2.
+-- This file has been generated from package.yaml by hpack version 0.27.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 25a9836a52f78ae714a96b3c59a3a13a699e004551ad74dfc9e5a5398d504776
+-- hash: 73df974b4cfbc478008c1a6b3c5145e04e0bf3ca1bbe8445f262abb9b323aa93
 
+cabal-version:  >= 1.10
 name:           repology-api
 version:        0.1.0.0
+synopsis:       Repology.org API v1 bindings
+description:    This will eventually just be an API binding for Repology, but I'm using this to help me make a tool for nixpkgs, so they are combined right now. It returns all the packages that have newer versions in a packaging repo that Repology tracks.
 category:       Web
 homepage:       https://github.com/ryantm/repology-api#readme
+bug-reports:    https://github.com/ryantm/repology-api/issues
 author:         Ryan Mulligan
 maintainer:     ryan@ryantm.com
 copyright:      2018 Ryan Mulligan
-license:        BSD3
+license:        CC0-1.0
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
 
 extra-source-files:
     README.md
+
+source-repository head
+  type: git
+  location: https://github.com/ryantm/repology-api
 
 executable repology-api
   main-is: Main.hs

@@ -19,8 +19,9 @@ let
           aeson base errors http-client-tls servant servant-client text
           unordered-containers vector
         ];
-        preConfigure = "hpack";
+        prePatch = "hpack";
         homepage = "https://github.com/ryantm/repology-api#readme";
+        description = "Repology.org API v1 bindings";
         license = stdenv.lib.licenses.publicDomain;
       };
 

@@ -2,6 +2,7 @@
 
 module Main where
 
+import Control.Category ((>>>))
 import Control.Error
 import Control.Monad
 import Control.Monad.IO.Class
@@ -67,6 +68,8 @@ getUpdateInfo = do
   let newestPackages = fmap newest ms
   let nixNew = dropMaybes (zip nixPackages newestPackages)
   let mLastName = lastMetapackageName outdated
+  liftIO $ hPutStrLn stderr $ show mLastName
+  liftIO $ hPutStrLn stderr $ show (length ms)
   return (mLastName, length ms /= 1, V.fromList nixNew)
 
 --  let sorted = sortBy (\(p1,_) (p2,_) -> compare (name p1) (name p2)) nixNew
@@ -84,22 +87,30 @@ getNextUpdateInfo n = do
   return (mLastName, length ms /= 1, V.fromList nixNew)
 
 --  let sorted = sortBy (\(p1,_) (p2,_) -> compare (name p1) (name p2)) nixNew
-updateInfo :: (Package, Package) -> Text
-updateInfo (outdated, newest) =
-  name outdated <> " " <> version outdated <> " " <> version newest
+updateInfo :: (Package, Package) -> Maybe Text
+updateInfo (outdated, newest)
+  | isJust (name outdated) =
+    Just $
+    fromJust (name outdated) <> " " <> version outdated <> " " <> version newest
+updateInfo _ = Nothing
+
+justs :: Vector (Maybe a) -> Vector a
+justs = V.concatMap (maybeToList >>> V.fromList)
 
 moreNixUpdateInfo ::
      (Maybe Text, Vector (Package, Package))
   -> ClientM (Vector (Package, Package))
 moreNixUpdateInfo (Nothing, acc) = do
   (mLastName, moreWork, newNix) <- getUpdateInfo
-  liftIO $ V.sequence_ $ fmap Data.Text.IO.putStrLn $ fmap updateInfo newNix
+  liftIO $
+    V.sequence_ $ fmap Data.Text.IO.putStrLn $ justs $ fmap updateInfo newNix
   if moreWork
     then moreNixUpdateInfo (mLastName, newNix V.++ acc)
     else return acc
 moreNixUpdateInfo (Just name, acc) = do
   (mLastName, moreWork, newNix) <- getNextUpdateInfo name
-  liftIO $ V.sequence_ $ fmap Data.Text.IO.putStrLn $ fmap updateInfo newNix
+  liftIO $
+    V.sequence_ $ fmap Data.Text.IO.putStrLn $ justs $ fmap updateInfo newNix
   if moreWork
     then moreNixUpdateInfo (mLastName, newNix V.++ acc)
     else return acc
@@ -111,6 +122,10 @@ main :: IO ()
 main = do
   hSetBuffering stdout LineBuffering
   hSetBuffering stderr LineBuffering
+  liftIO $ hPutStrLn stderr "starting"
   manager' <- newTlsManager
-  runClientM allNixUpdateInfo (ClientEnv manager' baseUrl Nothing)
+  e <- runClientM allNixUpdateInfo (ClientEnv manager' baseUrl Nothing)
+  case e of
+    Left ce -> liftIO $ hPutStrLn stderr $ show ce
+    Right _ -> liftIO $ hPutStrLn stderr $ "done"
   return ()
