@@ -1,8 +1,15 @@
 # repology-api
 
-This will eventually just be an API binding for Repology, but I'm using this to help me make a tool for nixpkgs, so they are combined right now. It returns all the packages that have newer versions in a packaging repo that Repology tracks.
+Scans the Repology [nixpkgs-unstable] distribution for packages that have newer
+versions on at least one other Repology distribution, and emits a JSON file with
+the upgrade information.
+
+Note that because this is not diffing against the master checkout of NixPkgs,
+the JSON file will include packages that have already been updated on master but
+not yet reached the unstable NixPkgs channel.
 
 Example usage:
+
 ```
 cabal2nix --shell --hpack . > shell.nix && nix-build shell.nix && result/bin/repology-api
 boehm-gc 7.6.2 7.6.4
@@ -12,3 +19,5 @@ blueman 2.0.4 2.1
 bossa 2014-08-18 20140109
 ...
 ```
+
+[nixpkgs-unstable]: https://repology.org/repository/nix_unstable
