@@ -4,9 +4,9 @@ Scans the Repology [nixpkgs-unstable] distribution for packages that have newer
 versions on at least one other Repology distribution, and emits a JSON file with
 the upgrade information.
 
-Note that because this is not diffing against the master checkout of NixPkgs,
+Note that because this is not diffing against the master checkout of Nixpkgs,
 the JSON file will include packages that have already been updated on master but
-not yet reached the unstable NixPkgs channel.
+not yet reached the unstable Nixpkgs channel.
 
 Example usage:
 
